@@ -13,7 +13,7 @@
 | Spring Cloud | Hoxton.SR1    |
 | Spring Boot  | 2.2.2.RELEASE |
 
-==ps:由于时间精力有限，先整理了Spring Cloud部分，Spring Cloud Alibaba部分后续会补上。==
+`ps:由于时间精力有限，先整理了Spring Cloud部分，Spring Cloud Alibaba部分后续会补上。`
 
 
 
@@ -276,7 +276,7 @@ File -> new -> Project -> Maven - > org.apache.maven.archetypes:maven-archetype-
 </project>
 ```
 
-==devtools热部署插件：简单理解为当开发人员修改了代码，项目会自动加载新改动的代码，无需手动重启项目，具体请自行baidu，步骤如下：==
+`devtools热部署插件：简单理解为当开发人员修改了代码，项目会自动加载新改动的代码，无需手动重启项目，具体请自行baidu，步骤如下：`
 
 1. pom.xml中添加依赖（已经添加了）
 
@@ -403,7 +403,7 @@ public class Payment implements Serializable {
 }
 ```
 
-==这里使用了lombok，需要先在idea中下载插件，之前pom.xml中也引入了对应的依赖==
+`这里使用了lombok，需要先在idea中下载插件，之前pom.xml中也引入了对应的依赖`
 
 ###### ⑤、controller
 
@@ -755,7 +755,386 @@ http://127.0.0.1/consumer/payment/1
 ```jso
 {"code":200,"message":"服务端口：8001","data":{"id":1,"serial":"红楼梦"}}
 ```
+#### 2、引入Eureka组件
 
+##### A、创建 cloud-eureka-server7001  
+
+- 写pom.xml
+
+  ```xml
+  <?xml version="1.0" encoding="UTF-8"?>
+  <project xmlns="http://maven.apache.org/POM/4.0.0"
+           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+           xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+      <parent>
+          <artifactId>cloud-h</artifactId>
+          <groupId>com.id01.springcloud</groupId>
+          <version>1.0-SNAPSHOT</version>
+      </parent>
+      <modelVersion>4.0.0</modelVersion>
+  
+      <artifactId>cloud-eureka-server7001</artifactId>
+  
+      <dependencies>
+  
+          <!-- eureka-server -->
+          <dependency>
+              <groupId>org.springframework.cloud</groupId>
+              <artifactId>spring-cloud-starter-netflix-eureka-server</artifactId>
+          </dependency>
+  
+          <!-- 公共api -->
+          <dependency>
+              <groupId>com.id01.springcloud</groupId>
+              <artifactId>cloud-commons-api</artifactId>
+              <version>1.0-SNAPSHOT</version>
+          </dependency>
+          <!-- boot -->
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-web</artifactId>
+          </dependency>
+          <!-- actuator -->
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-actuator</artifactId>
+          </dependency>
+  
+          <!--热部署  -->
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-devtools</artifactId>
+          </dependency>
+          <!-- lombok -->
+          <dependency>
+              <groupId>org.projectlombok</groupId>
+              <artifactId>lombok</artifactId>
+          </dependency>
+  
+          <dependency>
+              <groupId>org.springframework.boot</groupId>
+              <artifactId>spring-boot-starter-test</artifactId>
+          </dependency>
+  
+      </dependencies>
+  </project>
+  ```
+
+- 写application.yml
+
+  ```yaml
+  server:
+    port: 7001
+  
+  eureka:
+    instance:
+      hostname: eureka7001.com   #eureka服务端的实例名称
+    client:
+      #false表示不向注册中心注册自己
+      register-with-eureka: false
+      #false表示自己就是注册中心，职责就是维护服务实例，并不需要去检索服务
+      fetch-registry: false
+      service-url:
+        #eureka单机时，就是自己
+        defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+  
+  ```
+
+- 主启动类
+
+  ```java
+  /**
+   @author 01
+   @date 2020/7/8 0008 - 22:22
+   EnableEurekaServer  表示这个服务就是服务注册中心
+   */
+  @SpringBootApplication
+  @EnableEurekaServer
+  public class EurekaMain7001 {
+      public static void main(String[] args) {
+          SpringApplication.run(EurekaMain7001.class);
+      }
+  }
+  ```
+
+- 测试
+
+  ```txt
+  http://127.0.0.1:7001/
+  ```
+
+##### **B、cloud-provider-payment8001 改动**
+
+- pom.xml 添加以下依赖
+
+  ```xml
+  <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+  </dependency>
+  ```
+
+- application.yml  添加以下配置
+
+  ```yaml
+  #eureka相关
+  eureka:
+    client:
+      #把自己给注册到Eureka中
+      register-with-eureka: true
+      #是否从EurekaServer抓取已有的注册信息，默认为true。单节点无所谓，集群必须设置为true才能配合Ribbon使用负载均衡。
+      fetch-registry: true
+      #提供注册服务的服务器url
+      service-url:
+        # 单机版
+        defaultZone: http://127.0.0.1:7001/eureka/
+        
+    instance:
+      instance-id: payment8001   #修改，使Eureka中的图形界面显示不是主机名
+      prefer-ip-address: true 
+  ```
+
+- 启动类 改动 增加 注解 @EnableEurekaClient
+
+##### C、cloud-consumer-order80 改动
+
+- pom.xml 添加以下依赖
+
+  ```xml
+  <dependency>
+      <groupId>org.springframework.cloud</groupId>
+      <artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
+  </dependency>
+  ```
+
+- application.yml  添加以下配置
+
+  ```yaml
+  #eureka相关
+  eureka:
+    client:
+      #把自己给注册到Eureka中
+      register-with-eureka: true
+      #是否从EurekaServer抓取已有的注册信息，默认为true。单节点无所谓，集群必须设置为true才能配合Ribbon使用负载均衡。
+      fetch-registry: true
+      #提供注册服务的服务器url
+      service-url:
+        # 单机版
+        defaultZone: http://127.0.0.1:7001/eureka/
+        
+    instance:
+      instance-id: order80   #修改，使Eureka中的图形界面显示不是主机名
+      prefer-ip-address: true 
+  ```
+
+- 启动类 改动 增加 注解 @EnableEurekaClient
+
+##### D、测试
+
+- 127.0.0.1:7001 看Eureka注册中心中是否有对应服务
+
+  ![](https://s1.ax1x.com/2020/07/19/UfSNT0.png)
+
+##### E、Eureka集群
+
+再建一个cloud-eureka-order7002
+
+- 步骤同上A
+
+- 修改
+
+  `假设cloud-eureka-order7002已经创建好了的基础上。`
+
+  - 修改cloud-eureka-order7001、cloud-eureka-order7002的yml配置
+
+    7001的application.yml
+
+    ```yaml
+    server:
+      port: 7001
+    
+    eureka:
+      instance:
+        hostname: eureka7001.com   #eureka服务端的实例名称
+      client:
+        #false表示不向注册中心注册自己
+        #register-with-eureka: false
+        #这里要改为true
+        register-with-eureka: true
+        #false表示自己就是注册中心，职责就是维护服务实例，并不需要去检索服务
+        fetch-registry: false
+        service-url:
+          #eureka单机时，就是自己
+          #defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+          #eureka集群时，需要多个eureka互相注册，互相守望。需要改动的配置
+          defaultZone: http://eureka7002.com:7002/eureka/
+    ```
+
+    7002的application.yml
+
+    ```yaml
+    server:
+      port: 7002
+    
+    eureka:
+      instance:
+        hostname: eureka7002.com   #eureka服务端的实例名称
+      client:
+        #false表示不向注册中心注册自己
+        #register-with-eureka: false
+        #这里要改为true
+        register-with-eureka: true
+        #false表示自己就是注册中心，职责就是维护服务实例，并不需要去检索服务
+        fetch-registry: false
+        service-url:
+          #eureka单机时，就是自己
+          #defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
+          #eureka集群时，需要多个eureka互相注册，互相守望。需要改动的配置
+          defaultZone: http://eureka7001.com:7001/eureka/
+    ```
+
+  - 修改cloud-provider-payment8001的application.yml
+
+    ```yaml
+    server:
+      port: 8001
+    
+    #spring相关
+    spring:
+      application:
+        name: cloud-payment-service  #服务名
+      datasource:
+        type: com.alibaba.druid.pool.DruidDataSource        #当前数据源操作类型
+        driver-class-name: org.gjt.mm.mysql.Driver          #mysql驱动包
+        url: jdbc:mysql://127.0.0.1:3306/db2019?useUnicode=true&charcterEncoding=utf-8&useSSL=false
+        username: root
+        password: root
+    
+    #mybatis相关
+    mybatis:
+      mapper-locations: classpath:mapper/*.xml         #指定mybatis.xml文件路径
+      type-aliases-package: com.id01.springcloud.entities        #entity所在包
+    
+    
+    #eureka相关
+    eureka:
+      client:
+        #把自己给注册到Eureka中
+        register-with-eureka: true
+        #是否从EurekaServer抓取已有的注册信息，默认为true。单节点无所谓，集群必须设置为true才能配合Ribbon使用负载均衡。
+        fetch-registry: true
+        #提供注册服务的服务器url
+        service-url:
+          # 单机版
+          #defaultZone: http://127.0.0.1:7001/eureka/
+          # 集群后需要注册到多个Eureka中
+          defaultZone: http://eureka7002.com:7002/eureka/,http://eureka7001.com:7001/eureka/
+      instance:
+        instance-id: payment8001   #修改，使Eureka中的图形界面显示不是主机名
+        prefer-ip-address: true
+    ```
+
+  - 修改cloud-consumer-order80的application.yml
+
+    ```yaml
+    server:
+      port: 80
+    
+    spring:
+      application:
+        name: cloud-order-service
+    
+    #eureka相关
+    eureka:
+      client:
+        #把自己给注册到Eureka中
+        register-with-eureka: true
+        #是否从EurekaServer抓取已有的注册信息，默认为true。单节点无所谓，集群必须设置为true才能配合Ribbon使用负载均衡。
+        fetch-registry: true
+        #提供注册服务的服务器url
+        service-url:
+          # 单机版
+          # defaultZone: http://127.0.0.1:7001/eureka/
+          # 集群后需要注册到多个Eureka中
+          defaultZone: http://eureka7002.com:7002/eureka/,http://eureka7001.com:7001/eureka/
+    
+      instance:
+        instance-id: order80   #修改，使Eureka中的图形界面显示不是主机名
+        prefer-ip-address: true
+    ```
+
+  - 测试
+
+    - 依次启动7001、7002、8001、80
+
+    - 访问：http://127.0.0.1:7001/
+
+      ![image-20200719192656996](https://s1.ax1x.com/2020/07/19/UfpAhT.png)
+
+##### F、新建cloud-provider-payment8002
+
+- pom.xml
+
+  pom.xml的依赖与cloud-provider-payment8001完全一样
+
+- application.yml
+
+  server.port: 8002
+
+  instance-id: payment8002
+
+  其他与cloud-provider-payment8001完全一样
+
+##### G、修改cloud-consumer-order80
+
+OrderController修改PAYMENT_URL
+
+```java
+/**
+ @author 01
+ @date 2020/7/8 0008 - 17:43
+ */
+@RestController
+@Slf4j
+public class OrderController {
+    /**
+     * 服务url
+     */
+    //private static final String PAYMENT_URL = "http://127.0.0.1:8001";
+    private static final String PAYMENT_URL = "http://CLOUD-PAYMENT-SERVICE";
+```
+
+ApplicationContextConfig.getRestTemplate()方法增加注解**@LoadBalanced**
+
+```java
+@Configuration
+public class ApplicationContextConfig {
+    /**
+     * RestTemplate提供http调用
+     * REST api 非RPC
+     * @return RestTemplate
+     */
+    @Bean
+    @LoadBalanced
+    public RestTemplate getRestTemplate(){
+        return new RestTemplate();
+    }
+}
+```
+
+H、测试
+
+`说明：以上模块cloud-provider-payment8001、cloud-provider-payment8002、cloud-eureka-server7001、cloud-eureka-server7002、cloud-consumer-order80主要是想模拟Eureka集群、生产者服务集群的案例。`
+
+
+
+​	依次启动：cloud-eureka-server7001、cloud-eureka-server7002、cloud-provider-payment8001、cloud-provider-payment8002、cloud-consumer-order80
+
+​	访问：http://127.0.0.1/consumer/payment/1
+
+​	结果：
+
+​	![image-20200719223723089](https://s1.ax1x.com/2020/07/19/UfplAx.gif)
 
 
 
