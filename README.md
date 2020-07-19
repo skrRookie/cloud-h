@@ -725,11 +725,11 @@ pom.xml
 
 把entities包抽取到module：cloud-commons-api中，删除cloud-provider-payment8001、cloud-consumer-order80中的entities包
 
-![image-20200719173755020](images/image-20200719173755020.png)
+![image-20200719173755020](https://s1.ax1x.com/2020/07/19/UW38zQ.png)
 
 再使用maven先clean在install到本地仓库中
 
-![image-20200719173539550](images/image-20200719173539550.png)
+![image-20200719173539550](https://s1.ax1x.com/2020/07/19/UW3ad0.png)
 
 分别在cloud-provider-payment8001和cloud-consumer-order80的pom.xml文件中添加以下依赖
 
