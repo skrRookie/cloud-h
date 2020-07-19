@@ -21,6 +21,11 @@ public class PaymentController {
     @Value("${server.port}")
     private String serverPort;
 
+    /**
+     * 参数列表中使用@RequestBody注解为了解决consumer调用新增时，数据库中为null的问题
+     * @param payment
+     * @return
+     */
     @PostMapping("/payment")
     public CommonResult create(@RequestBody Payment payment){
         return paymentService.create(payment);
@@ -31,15 +36,6 @@ public class PaymentController {
         return paymentService.getPaymentById(id);
     }
 
-    @GetMapping("/payment/feign/timeOut")
-    public String paymentFeignTimeOut(){
-        try{
-            TimeUnit.SECONDS.sleep(3);
-        }catch(Exception e){
-            e.printStackTrace();
-        }
-        return serverPort;
-    }
 
     @PostMapping("/payment/serverPort")
     public String getServerPort(){
