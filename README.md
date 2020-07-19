@@ -679,6 +679,69 @@ public class OrderController {
 }
 ```
 
+`由于entities在两个module中都有，存在冗余，抽取entities包出来，打包install到maven中。再添加依赖。`
+
+**创建module  cloud-commons-api**
+
+pom.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cloud-h</artifactId>
+        <groupId>com.id01.springcloud</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cloud-commons-api</artifactId>
+    
+    <dependencies>
+
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>cn.hutool</groupId>
+            <artifactId>hutool-all</artifactId>
+            <version>5.1.12</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+</project>
+```
+
+把entities包抽取到module：cloud-commons-api中，删除cloud-provider-payment8001、cloud-consumer-order80中的entities包
+
+![image-20200719173755020](images/image-20200719173755020.png)
+
+再使用maven先clean在install到本地仓库中
+
+![image-20200719173539550](images/image-20200719173539550.png)
+
+分别在cloud-provider-payment8001和cloud-consumer-order80的pom.xml文件中添加以下依赖
+
+```xml
+<!-- 抽取的公共api -->
+<dependency>
+    <groupId>com.id01.springcloud</groupId>
+    <artifactId>cloud-commons-api</artifactId>
+    <version>1.0-SNAPSHOT</version>
+</dependency>
+```
+
 ###### ④、测试
 
 这里因为开始我就添加了一些数据，所以直接查询
@@ -692,6 +755,8 @@ http://127.0.0.1/consumer/payment/1
 ```jso
 {"code":200,"message":"服务端口：8001","data":{"id":1,"serial":"红楼梦"}}
 ```
+
+
 
 
 
