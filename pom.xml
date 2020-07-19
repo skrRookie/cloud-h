@@ -12,6 +12,7 @@
   <modules>
     <module>cloud-provider-payment8001</module>
     <module>cloud-consumer-order80</module>
+    <module>cloud-commons-api</module>
   </modules>
 
   <!-- 1、 packaging pom 总工程 -->
