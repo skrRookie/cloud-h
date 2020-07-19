@@ -4,3 +4,21 @@ server:
 spring:
   application:
     name: cloud-order-service
+
+#eureka相关
+eureka:
+  client:
+    #把自己给注册到Eureka中
+    register-with-eureka: true
+    #是否从EurekaServer抓取已有的注册信息，默认为true。单节点无所谓，集群必须设置为true才能配合Ribbon使用负载均衡。
+    fetch-registry: true
+    #提供注册服务的服务器url
+    service-url:
+      # 单机版
+      # defaultZone: http://127.0.0.1:7001/eureka/
+      # 集群后需要注册到多个Eureka中
+      defaultZone: http://eureka7002.com:7002/eureka/,http://eureka7001.com:7001/eureka/
+
+  instance:
+    instance-id: order80   #修改，使Eureka中的图形界面显示不是主机名
+    prefer-ip-address: true
