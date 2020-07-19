@@ -587,6 +587,160 @@ resource->mapper下创建PaymentMapper.xml
 
 </project>
 ```
+##### B、创建cloud-consumer-order80,服务消费者
+
+步骤：相同
+
+###### ①、pom.xml
+
+```xml
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <parent>
+        <artifactId>cloud2020</artifactId>
+        <groupId>com.id01.springcloud</groupId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
+    <modelVersion>4.0.0</modelVersion>
+
+    <artifactId>cloud-consumer-order80</artifactId>
+
+    <dependencies>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- spring-boot-devtools 热部署-->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-devtools</artifactId>
+            <scope>runtime</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <!-- lombok -->
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <optional>true</optional>
+        </dependency>
+    </dependencies>
+
+</project>
+```
+
+###### ②、application.yml
+
+```yaml
+server:
+  port: 80
+
+spring:
+  application:
+    name: cloud-order-service
+```
+
+###### ③、启动类
+
+```java
+/**
+ @author 01
+ @date 2020/7/8 0008 - 17:30
+ */
+@SpringBootApplication
+public class OrderMain80 {
+    public static void main(String[] args) {
+        SpringApplication.run(OrderMain80.class);
+    }
+}
+```
+
+###### ④、controller
+
+之前需要创建ApplicationContextConfig，由RestTemplate提供REST api调用
+
+```java
+/**
+ @author 01
+ @date 2020/7/8 0008 - 17:44
+ */
+@Configuration
+public class ApplicationContextConfig {
+    /**
+     * RestTemplate提供http调用
+     * REST api 非RPC
+     * @return RestTemplate
+     */
+    @Bean
+    public RestTemplate getRestTemplate(){
+        return new RestTemplate();
+    }
+}
+```
+
+OrderController
+
+```java
+/**
+ @author 01
+ @date 2020/7/8 0008 - 17:43
+ */
+@RestController
+@Slf4j
+public class OrderController {
+    /**
+     * 服务url
+     */
+    private static final String PAYMENT_URL = "http://127.0.0.1:8001";
+
+    @Autowired
+    private RestTemplate restTemplate;
+
+    /**
+     * 新建订单
+     * @param payment
+     * @return
+     */
+    @PostMapping("/consumer/payment")
+    public CommonResult<Payment> create(Payment payment) {
+        return restTemplate.postForObject(PAYMENT_URL + "/payment", payment, CommonResult.class);
+    }
+
+    /**
+     * 查询订单
+     * @param id
+     * @return
+     */
+    @GetMapping("/consumer/payment/{id}")
+    public CommonResult getPayment(@PathVariable("id") Long id) {
+        return restTemplate.getForObject(PAYMENT_URL + "/payment/" + id, CommonResult.class);
+    }
+
+}
+```
+
+###### ④、测试
+
+这里因为开始我就添加了一些数据，所以直接查询
+
+```txt
+http://127.0.0.1/consumer/payment/1
+```
+
+返回
+
+```jso
+{"code":200,"message":"服务端口：8001","data":{"id":1,"serial":"红楼梦"}}
+```
+
 
 
 
