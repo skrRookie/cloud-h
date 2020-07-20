@@ -1137,7 +1137,85 @@ H、测试
 ​	![image-20200719223723089](https://s1.ax1x.com/2020/07/19/UfplAx.gif)
 
 
+##### H、Eureka服务发现 Discovery
 
+`对应注册到Eureka注册中心的微服务，可以通过服务发现来获取服务的相关信息。`
+
+以8001为例
+
+- 启动类上添加@EnableDiscoveryClient
+
+- 修改controller,添加内容
+
+  ```java
+  /**
+   @author 01
+   @date 2020/7/8 0008 - 15:09
+   */
+  @RestController
+  @Slf4j
+  public class PaymentController {
+      /**
+       * 演示服务发现,配合@EnableDiscoveryClient获取微服务相关信息
+       */
+      @Autowired
+      private DiscoveryClient discoveryClient;
+  
+      /**
+       * 演示服务发现,配合@EnableDiscoveryClient获取微服务相关信息
+       */
+      @GetMapping("/payment/discovery")
+      public Object discovery(){
+          List<String> services = discoveryClient.getServices();
+          log.info("services   =====>   "+services.toString());
+          for (String service : services) {
+              List<ServiceInstance> instances = discoveryClient.getInstances(service);
+              for (ServiceInstance instance : instances) {
+                  log.info("detail service info  =====>    "+instance.getServiceId()+"\t"+instance.getHost()+"\t"+instance.getPort()+"\t"+instance.getUri());
+              }
+          }
+          return this.discoveryClient;
+      }
+      
+      //省去其他无关内容
+  ```
+
+- 访问：http://127.0.0.1:8001/payment/discovery
+
+- 结果：
+
+  ![image-20200720133858346](https://s1.ax1x.com/2020/07/20/UhJXYq.png)
+
+##### I、Eureka的自我保护机制
+
+`场景：当Eureka中注册的微服务死掉了，Eureka不会立刻清理，依旧会在注册中心中保留相关信息。`
+
+Spring Cloud 在CAP中是属于AP
+
+**如何修改配置自我保护机制**
+
+- 服务端yml新增内容如下：
+
+```yaml
+  server:
+    #关闭自我保护机制
+    enable-self-preservation: false
+    #超时时间，超过该时间没有监听到服务就注销掉该服务。
+    eviction-interval-timer-in-ms: 2000
+```
+
+- 客户端yml新增内容如下(instance下一级)：
+
+```yaml
+    #eureka客户端向服务端发送心跳时间间隔，单位s,默认是30s
+    lease-renewal-interval-in-seconds: 1
+    #eureka服务端在收到最后一次心跳后等待时间上限，单位为s，默认90，超时则会注销服务。
+    lease-expiration-duration-in-seconds: 2
+```
+
+### c、Zookeeper
+
+`在使用Spring Cloud时，也可以使用zookeeper或者consul作为注册中心,我这里使用的docker安装的Zookeeper，具体步骤请自行baidu`
 
 
 
