@@ -9,14 +9,15 @@
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
-    <artifactId>cloud-provider-payment8004</artifactId>
+    <artifactId>cloud-zk-consumer-order80</artifactId>
 
     <dependencies>
-        <!-- zookeeper-discovery -->
+
         <dependency>
             <groupId>org.springframework.cloud</groupId>
             <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
         </dependency>
+
 
         <!-- spring-boot-starter-web -->
         <dependency>
@@ -60,4 +61,5 @@
         </dependency>
 
     </dependencies>
+
 </project>

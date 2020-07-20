@@ -1,0 +1,12 @@
+server:
+  port: 80
+
+spring:
+  application:
+    name: cloud-zk-consumer-payment
+  # zookeeper相关配置 : 与eureka对比，zookeeper在某个服务挂掉后，默认服务心跳验证超时后，会直接将该服务注销掉。
+  cloud:
+    zookeeper:
+      #zookeeper地址，服务需要注册到zookeeper中。
+      connect-string: 你zookeeper所在主机的ip:2181
+
