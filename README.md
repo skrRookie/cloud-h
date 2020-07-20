@@ -1217,6 +1217,274 @@ Spring Cloud 在CAP中是属于AP
 
 `在使用Spring Cloud时，也可以使用zookeeper或者consul作为注册中心,我这里使用的docker安装的Zookeeper，具体步骤请自行baidu`
 
+`新建module：cloud-provider-payment8004  作为服务提供者`
+
+1. 写pom.xml
+
+   ```xml
+   <?xml version="1.0" encoding="UTF-8"?>
+   <project xmlns="http://maven.apache.org/POM/4.0.0"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+       <parent>
+           <artifactId>cloud-h</artifactId>
+           <groupId>com.id01.springcloud</groupId>
+           <version>1.0-SNAPSHOT</version>
+       </parent>
+       <modelVersion>4.0.0</modelVersion>
+   
+       <artifactId>cloud-provider-payment8004</artifactId>
+   
+       <dependencies>
+           <!-- zookeeper-discovery -->
+           <dependency>
+               <groupId>org.springframework.cloud</groupId>
+               <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+           </dependency>
+   
+           <!-- spring-boot-starter-web -->
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-web</artifactId>
+           </dependency>
+   
+           <!-- actuator -->
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-actuator</artifactId>
+           </dependency>
+   
+           <!-- spring-boot-devtools 热部署-->
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-devtools</artifactId>
+               <scope>runtime</scope>
+               <optional>true</optional>
+           </dependency>
+   
+           <!-- lombok -->
+           <dependency>
+               <groupId>org.projectlombok</groupId>
+               <artifactId>lombok</artifactId>
+               <optional>true</optional>
+           </dependency>
+   
+           <!-- spring-boot-starter-test -->
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-test</artifactId>
+               <scope>test</scope>
+           </dependency>
+   
+           <!-- 抽取的公共api -->
+           <dependency>
+               <groupId>com.id01.springcloud</groupId>
+               <artifactId>cloud-commons-api</artifactId>
+               <version>1.0-SNAPSHOT</version>
+           </dependency>
+   
+       </dependencies>
+   </project>
+   ```
+
+2. 写yml
+
+   ```yaml
+   server:
+     port: 8004
+   
+   #spring相关
+   spring:
+     application:
+       name: cloud-payment-service  #服务名
+   
+   # zookeeper相关配置 : 与eureka对比，zookeeper在某个服务挂掉后，默认服务心跳验证超时后，会直接将该服务注销掉。
+     cloud:
+       zookeeper:
+         #zookeeper地址，服务需要注册到zookeeper中。
+         connect-string: 你zookeeper所在服务器ip:2181
+   
+   ```
+
+3. 主启动类
+
+   ```java
+   /**
+    @author 01
+    @date 2020/7/19 0019 - 15:05
+    */
+   @SpringBootApplication
+   @EnableDiscoveryClient
+   public class PaymentMain8004 {
+       public static void main(String[] args) {
+           SpringApplication.run(PaymentMain8004.class);
+       }
+   }
+   
+   ```
+
+4. 其他类
+
+   PaymentController
+
+   ```java
+   /**
+    @author 01
+    @date 2020/7/8 0008 - 15:09
+    */
+   @RestController
+   @Slf4j
+   public class PaymentController {
+   
+       @Value("${server.port}")
+       private String serverPort;
+   
+       @GetMapping("/payment/zk")
+       public String paymentZK(){
+           return "SpringCloud with zookeeper :"+ serverPort + UUID.randomUUID().toString();
+       }
+   
+   }
+   ```
+
+   
+
+`新建module：cloud-zk-consumer-order80作为服务消费者`
+
+1. pom.xml
+
+   ```xml
+   <dependencies>
+   
+           <dependency>
+               <groupId>org.springframework.cloud</groupId>
+               <artifactId>spring-cloud-starter-zookeeper-discovery</artifactId>
+           </dependency>
+   
+   
+           <!-- spring-boot-starter-web -->
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-web</artifactId>
+           </dependency>
+   
+           <!-- actuator -->
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-actuator</artifactId>
+           </dependency>
+   
+           <!-- spring-boot-devtools 热部署-->
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-devtools</artifactId>
+               <scope>runtime</scope>
+               <optional>true</optional>
+           </dependency>
+   
+           <!-- lombok -->
+           <dependency>
+               <groupId>org.projectlombok</groupId>
+               <artifactId>lombok</artifactId>
+               <optional>true</optional>
+           </dependency>
+   
+           <!-- spring-boot-starter-test -->
+           <dependency>
+               <groupId>org.springframework.boot</groupId>
+               <artifactId>spring-boot-starter-test</artifactId>
+               <scope>test</scope>
+           </dependency>
+   
+           <!-- 抽取的公共api -->
+           <dependency>
+               <groupId>com.id01.springcloud</groupId>
+               <artifactId>cloud-commons-api</artifactId>
+               <version>1.0-SNAPSHOT</version>
+           </dependency>
+   
+       </dependencies>
+   ```
+
+2. application.yml
+
+   ```yaml
+   server:
+     port: 80
+   
+   spring:
+     application:
+       name: cloud-zk-consumer-payment
+     # zookeeper相关配置 : 与eureka对比，zookeeper在某个服务挂掉后，默认服务心跳验证超时后，会直接将该服务注销掉。
+     cloud:
+       zookeeper:
+         #zookeeper地址，服务需要注册到zookeeper中。
+         connect-string: 你zookeeper所在主机的ip:2181
+   
+   ```
+
+3. 启动类
+
+   ```java
+   /**
+    @author 01
+    @date 2020/7/9 0009 - 20:18
+    */
+   @SpringBootApplication
+   @EnableDiscoveryClient
+   public class OrderZkMain80 {
+       public static void main(String[] args) {
+           SpringApplication.run(OrderZkMain80.class);
+       }
+   }
+   ```
+
+4. 其他类
+
+   ApplicationContextConfig
+
+   ```java
+   /**
+    @author 01
+    @date 2020/7/9 0009 - 20:20
+    */
+   @Configuration
+   public class ApplicationContextConfig {
+   
+       @Bean
+       @LoadBalanced
+       public RestTemplate getRestTemplate(){
+           return new RestTemplate();
+       }
+   
+   }
+   ```
+
+   OrderZkController
+
+   ```java
+   /**
+    @author 01
+    @date 2020/7/9 0009 - 20:23
+    */
+   @RestController
+   public class OrderZkController {
+   
+       public static final String INVOKE_URL = "http://cloud-payment-service";
+   
+       @Autowired
+       private RestTemplate restTemplate;
+   
+       @GetMapping("/consumer/paymentInfo")
+       public String paymentInfo(){
+           return restTemplate.getForObject(INVOKE_URL + "/payment/zk", String.class);
+       }
+   }
+   ```
+
+`测试`
+
+![image-20200720144716325](https://s1.ax1x.com/2020/07/20/UhD3ND.png)
 
 
 
