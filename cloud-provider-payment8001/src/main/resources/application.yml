@@ -34,3 +34,9 @@ eureka:
   instance:
     instance-id: payment8001   #修改，使Eureka中的图形界面显示不是主机名
     prefer-ip-address: true
+
+######################  自我保护机制  #######################
+#    #eureka客户端向服务端发送心跳时间间隔，单位s,默认是30s
+#    lease-renewal-interval-in-seconds: 1
+#    #eureka服务端在收到最后一次心跳后等待时间上限，单位为s，默认90，超时则会注销服务。
+#    lease-expiration-duration-in-seconds: 2
