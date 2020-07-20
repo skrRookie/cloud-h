@@ -14,3 +14,11 @@ eureka:
       #defaultZone: http://${eureka.instance.hostname}:${server.port}/eureka/
       #eureka集群时，需要多个eureka互相注册，互相守望。需要改动的配置
       defaultZone: http://eureka7002.com:7002/eureka/
+
+
+######################  自我保护机制  #######################
+  server:
+    #关闭自我保护机制
+    enable-self-preservation: false
+    #超时时间，超过该时间没有监听到服务就注销掉该服务。
+    eviction-interval-timer-in-ms: 2000
