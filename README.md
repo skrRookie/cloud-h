@@ -13,8 +13,23 @@
 | Spring Cloud | Hoxton.SR1    |
 | Spring Boot  | 2.2.2.RELEASE |
 
-`ps:由于时间精力有限，先整理了Spring Cloud部分，Spring Cloud Alibaba部分后续会补上。`
+`ps:由于时间精力有限，计划先整理Spring Cloud部分，Spring Cloud Alibaba部分后续会补上。`
+### c、Module说明
 
+| module                     | 组件      |
+| -------------------------- | --------- |
+| cloud-provider-payment8001 | Eureka    |
+| cloud-provider-payment8002 | Eureka    |
+| cloud-consumer-order80     | Eureka    |
+| cloud-eureka-server7001    | Eureka    |
+| cloud-eureka-server7002    | Eureka    |
+| cloud-provider-payment8004 | Zookeeper |
+| cloud-zk-consumer-order80  | Zookeeper |
+|                            |           |
+
+
+
+## 
 
 
 ## 二、项目构建
